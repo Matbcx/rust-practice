@@ -1,49 +1,22 @@
-use std::env;
-use std::fs::File;
-use std::io::{self, BufRead, Write};
-
-fn compareTriplets(a: &[i32], b: &[i32]) -> Vec<i32> {
-    let mut alice_score = 0;
-    let mut bob_score = 0;
-
-    for (x, y) in a.iter().zip(b.iter()) {
-        if x > y {
-            alice_score += 1;
-        } else if x < y {
-            bob_score += 1;
-        }
-    }
-
-    vec![alice_score, bob_score]
-}
+use std::io::{self, BufRead};
 
 fn main() {
     let stdin = io::stdin();
-    let mut stdin_iterator = stdin.lock().lines();
+    let mut lines = stdin.lock().lines();
 
-    let mut fptr = File::create(env::var("OUTPUT_PATH").unwrap()).unwrap();
-
-    let a: Vec<i32> = stdin_iterator.next().unwrap().unwrap()
-        .trim_end()
-        .split(' ')
-        .map(|s| s.to_string().parse::<i32>().unwrap())
+    let a: Vec<i32> = lines.next().unwrap().unwrap()
+        .split_whitespace()
+        .map(|s| s.parse().unwrap())
         .collect();
 
-    let b: Vec<i32> = stdin_iterator.next().unwrap().unwrap()
-        .trim_end()
-        .split(' ')
-        .map(|s| s.to_string().parse::<i32>().unwrap())
+    let b: Vec<i32> = lines.next().unwrap().unwrap()
+        .split_whitespace()
+        .map(|s| s.parse().unwrap())
         .collect();
 
-    let result = compareTriplets(&a, &b);
+    let result = a.iter().zip(&b).fold((0, 0), |(alice, bob), (&x, &y)| {
+        (alice + (x > y) as i32, bob + (x < y) as i32)
+    });
 
-    for i in 0..result.len() {
-        write!(&mut fptr, "{}", result[i]).ok();
-
-        if i != result.len() - 1 {
-            write!(&mut fptr, " ").ok();
-        }
-    }
-
-    writeln!(&mut fptr).ok();
+    println!("{} {}", result.0, result.1);
 }
